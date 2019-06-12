@@ -3,8 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
-from api.models import Contact
-from api.serializers import ContactSerializer
+from api.models import Contact, Seccion, Elemento
+from api.serializers import ContactSerializer, UserSerializer, SeccionSerializer, ElementoSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 
@@ -73,3 +73,95 @@ class Logout(APIView):
     def post(self, request):
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)
+
+
+class Register(APIView):
+    def post(self, request):
+        user = UserSerializer(data=request.data, many=False)
+        if user.is_valid():
+            user.save()
+            return Response(user.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SeccionView(APIView):
+    authentication_classes = (SessionAuthentication,
+                              BasicAuthentication, TokenAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, seccion_id=None):
+
+        if seccion_id is not None:
+            seccion = Seccion.objects.get(id=seccion_id)
+            serializer = SeccionSerializer(seccion, many=False)
+            return Response(serializer.data)
+        else:
+            seccion = Seccion.objects.all()
+            serializer = SeccionSerializer(seccion, many=True)
+            return Response(serializer.data)
+
+    def post(self, request):
+        serializer = SeccionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, seccion_id):
+        seccion = Seccion.objects.get(Seccion, id=seccion_id)
+        data = request.data
+        serializer = SeccionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, seccion_id):
+        seccion = Seccion.objects.get(id=seccion_id)
+        seccion.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ElementoView(APIView):
+    authentication_classes = (SessionAuthentication,
+                              BasicAuthentication, TokenAuthentication)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, elemento_id=None):
+
+        if elemento_id is not None:
+            elemento = Elemento.objects.get(id=elemento_id)
+            serializer = ElementoSerializer(elemento, many=False)
+            return Response(serializer.data)
+        else:
+            elemento = Elemento.objects.all()
+            serializer = ElementoSerializer(elemento, many=True)
+            return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ElementoSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, elemento_id):
+        elemento = Elemento.objects.get(Elemento, id=elemento_id)
+        data = request.data
+        serializer = ElementoSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, elemento_id):
+        elemento = Elemento.objects.get(id=elemento_id)
+        elemento.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
